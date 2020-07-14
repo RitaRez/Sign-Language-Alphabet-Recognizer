@@ -4,21 +4,30 @@ import numpy as np
 import tensorflow as tf
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler,LabelBinarizer
 from sklearn.metrics import accuracy_score
-from tensorflow.keras.layers import Dense, Flatten, Conv2D
-from tensorflow.keras import Model
+
+from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
+from tensorflow.keras.callbacks import Callback
+from keras.models import Sequential
+
+class myCallback(Callback):
+  def on_epoch_end(self, epoch, logs={}):
+    if(logs.get('accuracy') > 0.95):
+        print("\nReached 95% accuracy so cancelling training!")
+        self.model.stop_training = True
 
 
-def data_preprocessing(y):
-    new_y = []
-    
-    for el in y:
-        arr = [0] * 26
-        arr[el - 1] = 1
-        new_y.append(arr)
-    
-    return new_y
+def data_labeling(y):
+    label_binrizer = LabelBinarizer()
+    labels = label_binrizer.fit_transform(y)
+
+    return labels
+
+def data_resizing(x):
+    x = x / 255.0
+    x = x.reshape(x.shape[0], 28, 28, 1)
+    return x
 
 def feature_scaling(data):
     sc = StandardScaler()
@@ -26,42 +35,40 @@ def feature_scaling(data):
 
     return data
 
-class MyModel(Model):
-  def __init__(self):
-    super(MyModel, self).__init__()
-    self.conv1 = Conv2D(32, 3, activation='relu')
-    self.flatten = Flatten()
-    self.d1 = Dense(128, activation='relu')
-    self.d2 = Dense(10)
-
-  def call(self, x):
-    x = self.conv1(x)
-    x = self.flatten(x)
-    x = self.d1(x)
-    return self.d2(x)
-
 def neural_network(x_train, y_train):
-    
-    nn = tf.keras.models.Sequential([
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(units=128, activation='relu'),
-        tf.keras.layers.Dense(units=26, activation='sigmoid')
-    ])
 
-    nn.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
-    nn.fit(x_train, y_train,  epochs=3)  
+    callbacks = myCallback()
+
+    nn = Sequential([
+        Conv2D(64, kernel_size=(3,3), activation='relu', input_shape=(28, 28, 1)),
+        MaxPooling2D(pool_size=(2, 2)),
+        Conv2D(64, kernel_size=(3,3), activation='relu'),
+        MaxPooling2D(pool_size=(2, 2)),
+        Flatten(),
+        Dense(128, activation = 'relu'),
+        Dropout(0.20),
+        Dense(24, activation='softmax')
+    ])  
+
+    nn.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+    nn.fit(x_train, y_train,  epochs=4, callbacks=[callbacks])  
 
     return nn
     
 def main():
     data = pd.read_csv('./MNIST/sign_mnist_train.csv')
-    x = data.iloc[:, 1:-1]
-    y = data_preprocessing(data.iloc[:, 0])
+    
+    x = np.array([np.reshape(i, (28, 28)) for i in data.iloc[:, 1:].values]) 
+    y = data_labeling(data.iloc[:, 0])
 
     x_train, x_test, y_train, y_test = train_test_split(x,y, test_size = 0.2, random_state = 1)
 
-    x_train = feature_scaling(x_train)
-    x_test = feature_scaling(x_test)
+    x_train = data_resizing(x_train)
+    x_test = data_resizing(x_test)
     
     nn = neural_network(x_train, y_train)
 
+    y_pred = nn.predict(x_test)
+    print(accuracy_score(y_test, y_pred.round()))
+
+main()
