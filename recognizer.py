@@ -2,14 +2,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler,LabelBinarizer
 from sklearn.metrics import accuracy_score
 
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
-from tensorflow.keras.callbacks import Callback
-from keras.models import Sequential
+from tensorflow.keras.callbacks import Callback, ModelCheckpoint
+from keras.models import Sequential, load_model
 
 class myCallback(Callback):
   def on_epoch_end(self, epoch, logs={}):
@@ -37,8 +38,8 @@ def feature_scaling(data):
 
 def neural_network(x_train, y_train):
 
-    callbacks = myCallback()
-
+    callbacks = myCallback() 
+   
     nn = Sequential([
         Conv2D(64, kernel_size=(3,3), activation='relu', input_shape=(28, 28, 1)),
         MaxPooling2D(pool_size=(2, 2)),
@@ -55,6 +56,18 @@ def neural_network(x_train, y_train):
 
     return nn
     
+def model_loader(x_train, y_train):
+    if  os.path.isfile('./saved_model/saved_model.pb'):
+        print('Loading model')     
+        nn = load_model('saved_model')
+    
+    else:    
+        print('Working on new model')
+        nn = neural_network(x_train, y_train)
+        nn.save('saved_model') 
+
+    return nn    
+
 def main():
     data = pd.read_csv('./MNIST/sign_mnist_train.csv')
     
@@ -66,7 +79,7 @@ def main():
     x_train = data_resizing(x_train)
     x_test = data_resizing(x_test)
     
-    nn = neural_network(x_train, y_train)
+    nn = model_loader(x_train, y_train)
 
     y_pred = nn.predict(x_test)
     print(accuracy_score(y_test, y_pred.round()))
