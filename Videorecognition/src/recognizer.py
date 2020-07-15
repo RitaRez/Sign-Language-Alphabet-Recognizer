@@ -21,80 +21,66 @@ class myCallback(Callback):
         print("\nReached 98% accuracy so cancelling training!")
         self.model.stop_training = True
 
+class NeuralNetwork():
 
-def data_labeling(y):
-    label_binrizer = LabelBinarizer()
-    labels = label_binrizer.fit_transform(y)
-
-    return labels
-
-def data_resizing(x):
-    x = x / 255.0
-    x = x.reshape(x.shape[0], 28, 28, 1)
-    return x
-
-def feature_scaling(data):
-    sc = StandardScaler()
-    data = sc.fit_transform(data)
-
-    return data
-
-def neural_network(x_train, y_train):
-
-    callbacks = myCallback() 
-   
-    nn = Sequential([
-        Conv2D(64, kernel_size=(3,3), activation='relu', input_shape=(28, 28, 1)),
-        MaxPooling2D(pool_size=(2, 2)),
-        Conv2D(64, kernel_size=(3,3), activation='relu'),
-        MaxPooling2D(pool_size=(2, 2)),
-        Flatten(),
-        Dense(128, activation = 'relu'),
-        Dropout(0.20),
-        Dense(NUMBER_OF_LETTERS, activation='softmax')
-    ])  
-
-    nn.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-    nn.fit(x_train, y_train,  epochs=10, callbacks=[callbacks])  
-
-    return nn
-    
-def model_loader(x_train, y_train):
-    if  os.path.isfile('../saved_model/saved_model.pb'):
-        print('Loading model')     
-        nn = load_model('saved_model')
-    
-    else:    
-        print('Working on new model')
-        nn = neural_network(x_train, y_train)
-        nn.save('../saved_model') 
-
-    return nn    
-
-def predict_pic(image, nn):
-    pred = nn.predict(image).round().astype(int).reshape(NUMBER_OF_LETTERS)
-    for i in range(0, len(pred)):
-        if pred[i] == 1:
-            print(labels[i])
-            return labels[i]
-
-def main():
     training_data = pd.read_csv('../../MNIST/sign_mnist_train.csv')
     testing_data = pd.read_csv('../../MNIST/sign_mnist_test.csv')
+    
 
-    x_train = data_resizing(np.array([np.reshape(i, (28, 28)) for i in training_data.iloc[:, 1:].values])) 
-    y_train = data_labeling(training_data.iloc[:, 0])
-    
-    x_test = data_resizing(np.array([np.reshape(i, (28, 28)) for i in testing_data.iloc[:, 1:].values])) 
-    y_test = data_labeling(testing_data.iloc[:, 0])
-    
-    nn = model_loader(x_train, y_train)
+    def __init__(self):
 
-    var = x_test[0].reshape(1, 28, 28, 1)
+        self.x_train = self.data_resizing(np.array([np.reshape(i, (28, 28)) for i in self.training_data.iloc[:, 1:].values])) 
+        self.y_train = self.data_labeling(self.training_data.iloc[:, 0])
+        self.x_test = self.data_resizing(np.array([np.reshape(i, (28, 28)) for i in self.testing_data.iloc[:, 1:].values])) 
+        self.y_test = self.data_labeling(self.testing_data.iloc[:, 0])
+        
+        if  os.path.isfile('../saved_model/saved_model.pb'):
+            print('Loading model')     
+            self.model = load_model('../saved_model')
+        
+        else:    
+            print('Working on new model')
+            self.make_model()
+            self.model.save('../saved_model') 
+
+    def data_labeling(self, y):
+        label_binrizer = LabelBinarizer()
+        labels = label_binrizer.fit_transform(y)
+
+        return labels
+
+    def data_resizing(self, x):
+        x = x / 255.0
+        x = x.reshape(x.shape[0], 28, 28, 1)
+        return x
+
+    def feature_scaling(self, data):
+        sc = StandardScaler()
+        data = sc.fit_transform(data)
+
+        return data
+
+    def make_model(self):
+
+        callbacks = myCallback() 
     
-    pred = nn.predict(x_test).round().astype(int)
-    print(pred)
-    print(accuracy_score(pred, y_test))
-    #predict_pic(var, nn)
-    
-main()
+        self.model = Sequential([
+            Conv2D(64, kernel_size=(3,3), activation='relu', input_shape=(28, 28, 1)),
+            MaxPooling2D(pool_size=(2, 2)),
+            Conv2D(64, kernel_size=(3,3), activation='relu'),
+            MaxPooling2D(pool_size=(2, 2)),
+            Flatten(),
+            Dense(128, activation = 'relu'),
+            Dropout(0.20),
+            Dense(NUMBER_OF_LETTERS, activation='softmax')
+        ])  
+
+        self.model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+        self.model.fit(self.x_train, self.y_train,  epochs=10, callbacks=[callbacks])  
+  
+    def predict_pic(self, image):
+        pred = self.model.predict(image).round().astype(int).reshape(NUMBER_OF_LETTERS)
+        for i in range(0, len(pred)):
+            if pred[i] == 1:
+                return labels[i]
+

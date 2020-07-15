@@ -3,10 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">    
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <title>Sign Language Alphabet Recognizer</title>
 </head>
-<body>
-    <h1>Video Stream</h1>
-    <img src="{{ url_for('video_feed') }}">
+<body >
+    <div class="container">
+        <div class="row mt-5">
+            <div class="justify-content col-7">
+                <img id="frame" class="ml-auto" src="{{ url_for('video_feed') }}">
+            </div>
+            <div class="offset-2 col-3">
+                <a href=# id=test>
+                    <button 
+                        class="mt-2 btn btn-dark"
+                        onclick="">
+                        Capture Frame 
+                        <i class="ml-1 fa fa-camera" ></i>
+                    </button>
+                </a>
+                <h2 class="mt-5">Letter Shown: p</h2>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type=text/javascript>
+        $(function() {
+          $('a#test').bind('click', function() {
+            $.getJSON('/predict_answer',
+                function(data) {
+            });
+            return false;
+          });
+        });
+    </script>
 </body>
 </html>

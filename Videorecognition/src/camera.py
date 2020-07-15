@@ -32,5 +32,5 @@ class Camera(object):
         # ret, jpeg = cv2.imencode('.jpg', frame)
         # return jpeg.tobytes()   
         ret, jpeg = cv.imencode('.jpg', frame)
-        return jpeg.tobytes()
+        return frame, jpeg.tobytes()
 

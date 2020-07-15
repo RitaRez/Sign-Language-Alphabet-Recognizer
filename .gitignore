@@ -3,3 +3,5 @@
 /__pycache__
 /Videorecognition/bin
 /Videorecognition/lib
+/Videorecognition/__pycache__
+/Videorecognition/src/__pycache__
