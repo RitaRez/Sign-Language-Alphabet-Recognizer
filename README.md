@@ -6,6 +6,12 @@
 pip install virtualenv
 virtualenv Videorecognition
 source Videorecognition/bin/activate
+```
+
+## To install project dependencies:
+
+
+```bash
 sudo apt install python3-opencv
 pip install Flask
 pip install matplotlib
