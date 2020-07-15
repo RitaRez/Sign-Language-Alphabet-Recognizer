@@ -11,6 +11,9 @@ from sklearn.metrics import accuracy_score
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
 from tensorflow.keras.callbacks import Callback, ModelCheckpoint
 from keras.models import Sequential, load_model
+from labels import labels
+
+NUMBER_OF_LETTERS = 24
 
 class myCallback(Callback):
   def on_epoch_end(self, epoch, logs={}):
@@ -48,7 +51,7 @@ def neural_network(x_train, y_train):
         Flatten(),
         Dense(128, activation = 'relu'),
         Dropout(0.20),
-        Dense(24, activation='softmax')
+        Dense(NUMBER_OF_LETTERS, activation='softmax')
     ])  
 
     nn.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
@@ -68,6 +71,13 @@ def model_loader(x_train, y_train):
 
     return nn    
 
+def predict_pic(image, nn):
+    pred = nn.predict(image).round().astype(int).reshape(NUMBER_OF_LETTERS)
+    for i in range(0, len(pred)):
+        if pred[i] == 1:
+            print(labels[i])
+            return labels[i]
+
 def main():
     data = pd.read_csv('./MNIST/sign_mnist_train.csv')
     
@@ -81,7 +91,8 @@ def main():
     
     nn = model_loader(x_train, y_train)
 
-    y_pred = nn.predict(x_test)
-    print(accuracy_score(y_test, y_pred.round()))
+    var = x_test[0].reshape(1, 28, 28, 1)
 
+    predict_pic(var, nn)
+    
 main()
