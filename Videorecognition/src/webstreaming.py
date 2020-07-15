@@ -1,9 +1,13 @@
 import os
+import numpy as np
 
 from importlib import import_module 
 from flask import Flask, render_template, Response
-from src.camera import Camera
-from src.recognizer import NeuralNetwork
+from camera import Camera
+from skimage import io, color
+
+from recognizer import NeuralNetwork
+
 from random import random
 
 app = Flask(__name__)
@@ -29,12 +33,18 @@ def video_feed():
 @app.route('/predict_answer')
 def predict_answer():
     current_frame, jpeg = cam.get_frame()
-    pic_name = random().round().astype(int)
-    io.imsave('../../dataset/jpeg'+pic_name, jpeg)
-    io.imsave('../../dataset/'+pic_name, current_frame)
+    gray_frame = color.rgb2gray(current_frame)
+    pic_number = str(int(np.floor(random()*10000)))
 
-    model = NeuralNetwork()
-    model.predict_pic(current_frame)
+    pic_name = '../../dataset/pic'+pic_number+'.jpg'
+    gray_pic_name = '../../dataset/gray'+pic_number+'.jpg'
+
+    io.imsave(pic_name, current_frame)
+    io.imsave(gray_pic_name, gray_frame)
+
+    #model = NeuralNetwork()
+    print('\n\n\n', gray_frame.shape)
+    # model.predict_pic(current_frame)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)                    

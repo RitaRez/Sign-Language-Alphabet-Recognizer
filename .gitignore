@@ -5,3 +5,6 @@
 /Videorecognition/lib
 /Videorecognition/__pycache__
 /Videorecognition/src/__pycache__
+Videorecognition/src/__pycache__/camera.cpython-36.pyc
+Videorecognition/src/__pycache__/labels.cpython-36.pyc
+Videorecognition/__pycache__/webstreaming.cpython-36.pyc

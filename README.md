@@ -18,6 +18,7 @@ pip install matplotlib
 pip install numpy
 pip install pandas
 pip install tensorflow
+pip install scikit-image
 ```
 
 ## To run flask app:

@@ -3,6 +3,7 @@ import cv2 as cv
 face_cascade=cv.CascadeClassifier("haarcascade_frontalface_alt2.xml")
 ds_factor=0.6
 
+BOX_SIZE = 180
 
 class Camera(object):
     
@@ -31,6 +32,7 @@ class Camera(object):
         #  break        # encode OpenCV raw frame to jpg and displaying it
         # ret, jpeg = cv2.imencode('.jpg', frame)
         # return jpeg.tobytes()   
+        cv.rectangle(frame,(80,225),(80+BOX_SIZE,225+BOX_SIZE),(0,255,0),2)
         ret, jpeg = cv.imencode('.jpg', frame)
         return frame, jpeg.tobytes()
 

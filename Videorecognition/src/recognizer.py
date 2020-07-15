@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
 from tensorflow.keras.callbacks import Callback, ModelCheckpoint
 from tensorflow.keras.models import Sequential, load_model
-from labels import labels
+from labels import dictionary
 
 NUMBER_OF_LETTERS = 24
 
@@ -82,5 +82,5 @@ class NeuralNetwork():
         pred = self.model.predict(image).round().astype(int).reshape(NUMBER_OF_LETTERS)
         for i in range(0, len(pred)):
             if pred[i] == 1:
-                return labels[i]
+                return dictionary[i]
 
