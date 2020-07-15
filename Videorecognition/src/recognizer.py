@@ -10,15 +10,15 @@ from sklearn.metrics import accuracy_score
 
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
 from tensorflow.keras.callbacks import Callback, ModelCheckpoint
-from keras.models import Sequential, load_model
+from tensorflow.keras.models import Sequential, load_model
 from labels import labels
 
 NUMBER_OF_LETTERS = 24
 
 class myCallback(Callback):
   def on_epoch_end(self, epoch, logs={}):
-    if(logs.get('accuracy') > 0.95):
-        print("\nReached 95% accuracy so cancelling training!")
+    if(logs.get('accuracy') > 0.98):
+        print("\nReached 98% accuracy so cancelling training!")
         self.model.stop_training = True
 
 
@@ -55,19 +55,19 @@ def neural_network(x_train, y_train):
     ])  
 
     nn.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-    nn.fit(x_train, y_train,  epochs=4, callbacks=[callbacks])  
+    nn.fit(x_train, y_train,  epochs=10, callbacks=[callbacks])  
 
     return nn
     
 def model_loader(x_train, y_train):
-    if  os.path.isfile('./saved_model/saved_model.pb'):
+    if  os.path.isfile('../saved_model/saved_model.pb'):
         print('Loading model')     
         nn = load_model('saved_model')
     
     else:    
         print('Working on new model')
         nn = neural_network(x_train, y_train)
-        nn.save('saved_model') 
+        nn.save('../saved_model') 
 
     return nn    
 
@@ -79,20 +79,22 @@ def predict_pic(image, nn):
             return labels[i]
 
 def main():
-    data = pd.read_csv('./MNIST/sign_mnist_train.csv')
+    training_data = pd.read_csv('../../MNIST/sign_mnist_train.csv')
+    testing_data = pd.read_csv('../../MNIST/sign_mnist_test.csv')
+
+    x_train = data_resizing(np.array([np.reshape(i, (28, 28)) for i in training_data.iloc[:, 1:].values])) 
+    y_train = data_labeling(training_data.iloc[:, 0])
     
-    x = np.array([np.reshape(i, (28, 28)) for i in data.iloc[:, 1:].values]) 
-    y = data_labeling(data.iloc[:, 0])
-
-    x_train, x_test, y_train, y_test = train_test_split(x,y, test_size = 0.2, random_state = 1)
-
-    x_train = data_resizing(x_train)
-    x_test = data_resizing(x_test)
+    x_test = data_resizing(np.array([np.reshape(i, (28, 28)) for i in testing_data.iloc[:, 1:].values])) 
+    y_test = data_labeling(testing_data.iloc[:, 0])
     
     nn = model_loader(x_train, y_train)
 
     var = x_test[0].reshape(1, 28, 28, 1)
-
-    predict_pic(var, nn)
+    
+    pred = nn.predict(x_test).round().astype(int)
+    print(pred)
+    print(accuracy_score(pred, y_test))
+    #predict_pic(var, nn)
     
 main()
