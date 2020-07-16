@@ -61,7 +61,7 @@ def predict_answer():
     model = NeuralNetwork()
     prediction, certainty = model.predict_pic(pix)
 
-    prediction = 'Letter Shown: ' + prediction + ', ' + str(certainty*100) + '% certainty'
+    prediction = 'Letter Shown: ' + prediction + ', ' + str(round(certainty*100, 3)) + '% certainty'
     return prediction
 
 
