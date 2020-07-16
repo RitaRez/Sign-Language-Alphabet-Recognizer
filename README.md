@@ -10,15 +10,9 @@ source Videorecognition/bin/activate
 
 ## To install project dependencies:
 
-
 ```bash
 sudo apt install python3-opencv
-pip install Flask
-pip install matplotlib
-pip install numpy
-pip install pandas
-pip install tensorflow
-pip install scikit-image
+pip install -r requirements.txt
 ```
 
 ## To run flask app:
