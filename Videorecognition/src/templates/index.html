@@ -16,8 +16,9 @@
                 <img id="frame" class="ml-auto" src="{{ url_for('video_feed') }}">
             </div>
             <div class="offset-2 col-3">
+                <h1>Put your dominant hand on the green square!</h1>
+
                 <a href=# id=test>
-                    <h1>Put your dominant hand on the green square!</h1>
                     <button 
                         class="mt-2 btn btn-dark"
                         onclick="">
@@ -25,7 +26,7 @@
                         <i class="ml-1 fa fa-camera" ></i>
                     </button>
                 </a>
-                <h2 class="mt-5">Letter Shown: p</h2>
+                <h2 id="prediction" class="mt-5"> </h2>
             </div>
         </div>
     </div>
@@ -35,12 +36,11 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script type=text/javascript>
         $(function() {
-          $('a#test').bind('click', function() {
-            $.getJSON('/predict_answer',
-                function(data) {
+            $('a#test').bind('click', function() {
+                $.get('/predict_answer', function(data) {
+                    document.getElementById('prediction').innerText = data
+                });
             });
-            return false;
-          });
         });
     </script>
 </body>

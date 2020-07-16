@@ -14,6 +14,7 @@ from tensorflow.keras.models import Sequential, load_model
 from labels import dictionary
 
 NUMBER_OF_LETTERS = 24
+NUMBER_OF_PIXELS = 28
 
 class myCallback(Callback):
   def on_epoch_end(self, epoch, logs={}):
@@ -29,9 +30,9 @@ class NeuralNetwork():
 
     def __init__(self):
 
-        self.x_train = self.data_resizing(np.array([np.reshape(i, (28, 28)) for i in self.training_data.iloc[:, 1:].values])) 
+        self.x_train = self.data_resizing(np.array([np.reshape(i, (NUMBER_OF_PIXELS, NUMBER_OF_PIXELS)) for i in self.training_data.iloc[:, 1:].values])) 
         self.y_train = self.data_labeling(self.training_data.iloc[:, 0])
-        self.x_test = self.data_resizing(np.array([np.reshape(i, (28, 28)) for i in self.testing_data.iloc[:, 1:].values])) 
+        self.x_test = self.data_resizing(np.array([np.reshape(i, (NUMBER_OF_PIXELS, NUMBER_OF_PIXELS)) for i in self.testing_data.iloc[:, 1:].values])) 
         self.y_test = self.data_labeling(self.testing_data.iloc[:, 0])
         
         if  os.path.isfile('../saved_model/saved_model.pb'):
@@ -51,7 +52,7 @@ class NeuralNetwork():
 
     def data_resizing(self, x):
         x = x / 255.0
-        x = x.reshape(x.shape[0], 28, 28, 1)
+        x = x.reshape(x.shape[0], NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1)
         return x
 
     def feature_scaling(self, data):
@@ -65,7 +66,7 @@ class NeuralNetwork():
         callbacks = myCallback() 
     
         self.model = Sequential([
-            Conv2D(64, kernel_size=(3,3), activation='relu', input_shape=(28, 28, 1)),
+            Conv2D(64, kernel_size=(3,3), activation='relu', input_shape=(NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1)),
             MaxPooling2D(pool_size=(2, 2)),
             Conv2D(64, kernel_size=(3,3), activation='relu'),
             MaxPooling2D(pool_size=(2, 2)),

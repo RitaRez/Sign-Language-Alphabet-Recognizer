@@ -1,5 +1,5 @@
 /MNIST
-/dataset
+/dataset/*
 /__pycache__
 /Videorecognition/bin
 /Videorecognition/lib
