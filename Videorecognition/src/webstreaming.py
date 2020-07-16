@@ -17,7 +17,6 @@ cam = Camera()
 
 @app.route("/")
 def index():
-	# return the rendered template
 	return render_template("index.html", answer=' ')
 
 def gen(camera):
@@ -41,12 +40,12 @@ def predict_answer():
     current_frame, jpeg = cam.get_frame()
     gray_frame = color.rgb2gray(current_frame)
     gray_frame = exposure.equalize_hist(gray_frame)
-    val = filters.threshold_otsu(current_frame)
-    binary_frame = current_frame < val
+    #val = filters.threshold_otsu(current_frame)
+    #binary_frame = current_frame < val
     
     gray_name = '../../dataset/gray'+pic_number+'.jpg'
     gray_croped_name = '../../dataset/gray_croped'+pic_number+'.jpg'
-    binary_name = '../../dataset/binary'+pic_number+'.jpg'
+    #binary_name = '../../dataset/binary'+pic_number+'.jpg'
 
     io.imsave(gray_name, gray_frame)
     io.imsave(binary_name, binary_frame)

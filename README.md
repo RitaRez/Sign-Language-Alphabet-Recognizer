@@ -1,4 +1,6 @@
 # Sign Language Alphabet Recognizer
+Through a flask application the program access the webcam conected to the device being used, takes pictures of the user and predicts which sign language alphabet letter is being displayed. 
+
 
 ## To run virtual environment:
 
