@@ -4,7 +4,6 @@ import numpy as np
 import tensorflow as tf
 import os
 
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler,LabelBinarizer
 from sklearn.metrics import accuracy_score
 
@@ -12,14 +11,12 @@ from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropou
 from tensorflow.keras.callbacks import Callback, ModelCheckpoint
 from tensorflow.keras.models import Sequential, load_model
 from labels import dictionary
-
-NUMBER_OF_LETTERS = 24
-NUMBER_OF_PIXELS = 28
+from constants import NUMBER_OF_LETTERS, NUMBER_OF_PIXELS
 
 class myCallback(Callback):
   def on_epoch_end(self, epoch, logs={}):
-    if(logs.get('accuracy') > 0.98):
-        print("\nReached 98% accuracy so cancelling training!")
+    if(logs.get('accuracy') > 0.99):
+        print("\nReached 99% accuracy so cancelling training!")
         self.model.stop_training = True
 
 class NeuralNetwork():
@@ -27,9 +24,7 @@ class NeuralNetwork():
     training_data = pd.read_csv('../../MNIST/sign_mnist_train.csv')
     testing_data = pd.read_csv('../../MNIST/sign_mnist_test.csv')
     
-
     def __init__(self):
-
         self.x_train = self.data_resizing(np.array([np.reshape(i, (NUMBER_OF_PIXELS, NUMBER_OF_PIXELS)) for i in self.training_data.iloc[:, 1:].values])) 
         self.y_train = self.data_labeling(self.training_data.iloc[:, 0])
         self.x_test = self.data_resizing(np.array([np.reshape(i, (NUMBER_OF_PIXELS, NUMBER_OF_PIXELS)) for i in self.testing_data.iloc[:, 1:].values])) 
@@ -53,18 +48,12 @@ class NeuralNetwork():
     def data_resizing(self, x):
         x = x / 255.0
         x = x.reshape(x.shape[0], NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1)
+
         return x
-
-    def feature_scaling(self, data):
-        sc = StandardScaler()
-        data = sc.fit_transform(data)
-
-        return data
 
     def make_model(self):
 
-        callbacks = myCallback() 
-    
+        callbacks = myCallback()   
         self.model = Sequential([
             Conv2D(64, kernel_size=(3,3), activation='relu', input_shape=(NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1)),
             MaxPooling2D(pool_size=(2, 2)),
@@ -72,7 +61,7 @@ class NeuralNetwork():
             MaxPooling2D(pool_size=(2, 2)),
             Flatten(),
             Dense(128, activation = 'relu'),
-            Dropout(0.20),
+            Dropout(0.5),
             Dense(NUMBER_OF_LETTERS, activation='softmax')
         ])  
 
@@ -81,7 +70,9 @@ class NeuralNetwork():
   
     def predict_pic(self, image):
         pred = self.model.predict(image).round().astype(int).reshape(NUMBER_OF_LETTERS)
+        print(pred)
         for i in range(0, len(pred)):
             if pred[i] == 1:
                 return dictionary[i]
+        return 'I couldnt recognize '        
 
