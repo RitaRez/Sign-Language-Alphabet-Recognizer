@@ -48,7 +48,7 @@ def predict_answer():
     #binary_name = '../../dataset/binary'+pic_number+'.jpg'
 
     io.imsave(gray_name, gray_frame)
-    io.imsave(binary_name, binary_frame)
+    #io.imsave(binary_name, binary_frame)
 
     gray_frame = Image.open(gray_name)
     gray_frame_crop = gray_frame.crop((80,225,80+BOX_SIZE,225+BOX_SIZE))
