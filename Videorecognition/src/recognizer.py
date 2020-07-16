@@ -48,7 +48,6 @@ class NeuralNetwork():
     def data_resizing(self, x):
         x = x / 255.0
         x = x.reshape(x.shape[0], NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1)
-
         return x
 
     def make_model(self):
@@ -69,10 +68,10 @@ class NeuralNetwork():
         self.model.fit(self.x_train, self.y_train,  epochs=10, callbacks=[callbacks])  
   
     def predict_pic(self, image):
-        pred = self.model.predict(image).round().astype(int).reshape(NUMBER_OF_LETTERS)
-        print(pred)
+        accuracy = self.model.predict(image).reshape(NUMBER_OF_LETTERS)
+        pred = accuracy.round().astype(int)
         for i in range(0, len(pred)):
             if pred[i] == 1:
-                return dictionary[i]
-        return 'I couldnt recognize '        
+                return dictionary[i], accuracy[i]
+        return 'I couldnt recognize ', 0        
 

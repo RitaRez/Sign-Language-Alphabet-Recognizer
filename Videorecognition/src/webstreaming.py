@@ -1,15 +1,16 @@
 import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2 as cv
 
 from constants import BOX_SIZE, NUMBER_OF_PIXELS
 from importlib import import_module 
 from flask import Flask, render_template, Response, render_template_string
 from camera import Camera
-from skimage import io, color
+from skimage import io, color, exposure, filters
 from recognizer import NeuralNetwork
 from random import random
-from PIL import Image
+from PIL import Image, ImageEnhance
 
 app = Flask(__name__)
 cam = Camera()
@@ -34,30 +35,34 @@ def video_feed():
 
 @app.route('/predict_answer')
 def predict_answer():
-    current_frame, jpeg = cam.get_frame()
-    gray_frame = color.rgb2gray(current_frame)
+
     pic_number = str(int(np.floor(random()*10000)))
 
-    pic_name = '../../dataset/pic'+pic_number+'.jpg'
-    gray_pic_name = '../../dataset/gray'+pic_number+'.jpg'
+    current_frame, jpeg = cam.get_frame()
+    gray_frame = color.rgb2gray(current_frame)
+    gray_frame = exposure.equalize_hist(gray_frame)
+    val = filters.threshold_otsu(current_frame)
+    binary_frame = current_frame < val
+    
+    gray_name = '../../dataset/gray'+pic_number+'.jpg'
     gray_croped_name = '../../dataset/gray_croped'+pic_number+'.jpg'
+    binary_name = '../../dataset/binary'+pic_number+'.jpg'
 
-    #io.imsave(pic_name, current_frame)
-    io.imsave(gray_pic_name, gray_frame)
+    io.imsave(gray_name, gray_frame)
+    io.imsave(binary_name, binary_frame)
 
-    gray_frame = Image.open(gray_pic_name)
+    gray_frame = Image.open(gray_name)
     gray_frame_crop = gray_frame.crop((80,225,80+BOX_SIZE,225+BOX_SIZE))
     gray_frame_crop.thumbnail((NUMBER_OF_PIXELS, NUMBER_OF_PIXELS), Image.ANTIALIAS)
     gray_frame_crop.save(gray_croped_name)
-    pix = np.array(gray_frame_crop.getdata()).reshape(1, NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1 )/255.0
-    #pix = np.array([np.reshape(i, (NUMBER_OF_PIXELS, NUMBER_OF_PIXELS)) for i in (np.array(gray_frame_crop.getdata()))])
+
+    pix = np.array(gray_frame_crop.getdata()).reshape(-1, NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1)/255.0
     prediction = ' '
     
     model = NeuralNetwork()
-    #pix = model.data_resizing(pix)
-    prediction = model.predict_pic(pix)
-    print('\n\n\n\n',prediction)
-    prediction = 'Letter Shown: ' + prediction
+    prediction, certainty = model.predict_pic(pix)
+
+    prediction = 'Letter Shown: ' + prediction + ', ' + str(certainty*100) + '% certainty'
     return prediction
 
 
