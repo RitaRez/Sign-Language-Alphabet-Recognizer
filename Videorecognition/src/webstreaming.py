@@ -14,6 +14,7 @@ from PIL import Image, ImageEnhance
 
 app = Flask(__name__)
 cam = Camera()
+model = NeuralNetwork()
 
 @app.route("/")
 def index():
@@ -36,15 +37,18 @@ def video_feed():
 def predict_answer():
 
     pic_number = str(int(np.floor(random()*10000)))
+    gray_name = '../../dataset/gray'+pic_number+'.jpg'
+    enhanced_name = '../../dataset/gray_enhanced'+pic_number+'.jpg'
+    gray_croped_name = '../../dataset/gray_croped'+pic_number+'.jpg'
 
     current_frame, jpeg = cam.get_frame()
     gray_frame = color.rgb2gray(current_frame)
+
     gray_frame = exposure.equalize_hist(gray_frame)
-    #val = filters.threshold_otsu(current_frame)
-    #binary_frame = current_frame < val
+    # val = filters.threshold_otsu(current_frame)
+    # binary_frame = current_frame < val
     
-    gray_name = '../../dataset/gray'+pic_number+'.jpg'
-    gray_croped_name = '../../dataset/gray_croped'+pic_number+'.jpg'
+
     #binary_name = '../../dataset/binary'+pic_number+'.jpg'
 
     io.imsave(gray_name, gray_frame)
@@ -58,7 +62,6 @@ def predict_answer():
     pix = np.array(gray_frame_crop.getdata()).reshape(-1, NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1)/255.0
     prediction = ' '
     
-    model = NeuralNetwork()
     prediction, certainty = model.predict_pic(pix)
 
     prediction = 'Letter Shown: ' + prediction + ', ' + str(round(certainty*100, 3)) + '% certainty'

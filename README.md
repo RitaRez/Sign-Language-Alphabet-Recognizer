@@ -20,7 +20,7 @@ pip install -r requirements.txt
 ## To run flask app:
 
 ```bash
-cd Videorecognition
+cd Videorecognition/src
 export FLASK_APP=webstreaming.py
 flask run
 ```

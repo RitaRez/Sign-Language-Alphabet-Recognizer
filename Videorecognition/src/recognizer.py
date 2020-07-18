@@ -60,7 +60,7 @@ class NeuralNetwork():
             MaxPooling2D(pool_size=(2, 2)),
             Flatten(),
             Dense(128, activation = 'relu'),
-            Dropout(0.5),
+            Dropout(0.4),
             Dense(NUMBER_OF_LETTERS, activation='softmax')
         ])  
 
