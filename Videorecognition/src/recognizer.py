@@ -10,8 +10,7 @@ from sklearn.metrics import accuracy_score
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
 from tensorflow.keras.callbacks import Callback, ModelCheckpoint
 from tensorflow.keras.models import Sequential, load_model
-from labels import dictionary
-from constants import NUMBER_OF_LETTERS, NUMBER_OF_PIXELS
+from constants import NUMBER_OF_LETTERS, NUMBER_OF_PIXELS, DICTIONARY
 
 class myCallback(Callback):
   def on_epoch_end(self, epoch, logs={}):
@@ -40,9 +39,12 @@ class NeuralNetwork():
             self.model.save('../saved_model') 
 
     def data_labeling(self, y):
+        for i in range(0, len(y)):
+            if(y[i] >= 9):
+                y[i]-=1
         label_binrizer = LabelBinarizer()
         labels = label_binrizer.fit_transform(y)
-
+ 
         return labels
 
     def data_resizing(self, x):
@@ -51,7 +53,6 @@ class NeuralNetwork():
         return x
 
     def make_model(self):
-
         callbacks = myCallback()   
         self.model = Sequential([
             Conv2D(64, kernel_size=(3,3), activation='relu', input_shape=(NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1)),
@@ -60,7 +61,7 @@ class NeuralNetwork():
             MaxPooling2D(pool_size=(2, 2)),
             Flatten(),
             Dense(128, activation = 'relu'),
-            Dropout(0.4),
+            Dropout(0.2),
             Dense(NUMBER_OF_LETTERS, activation='softmax')
         ])  
 
@@ -72,6 +73,16 @@ class NeuralNetwork():
         pred = accuracy.round().astype(int)
         for i in range(0, len(pred)):
             if pred[i] == 1:
-                return dictionary[i], accuracy[i]
+                return DICTIONARY[i], accuracy[i]
         return 'I couldnt recognize ', 0        
 
+
+
+# nn = NeuralNetwork()
+# pred = nn.model.predict(nn.x_test).reshape(NUMBER_OF_LETTERS).round().astype(int)
+# new = []
+# for i in range(0, len(pred)):
+#     if pred[i] == 1:
+#         new.append(i)
+# print(new)        
+# accuracy_score(nn.y_test, pred)
