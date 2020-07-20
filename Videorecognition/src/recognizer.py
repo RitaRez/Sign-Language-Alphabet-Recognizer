@@ -3,13 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import os
-
+from skimage import io
 from sklearn.preprocessing import StandardScaler,LabelBinarizer
 from sklearn.metrics import accuracy_score
 
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
 from tensorflow.keras.callbacks import Callback, ModelCheckpoint
 from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from constants import NUMBER_OF_LETTERS, NUMBER_OF_PIXELS, DICTIONARY
 
 class myCallback(Callback):
@@ -20,15 +21,10 @@ class myCallback(Callback):
 
 class NeuralNetwork():
 
-    training_data = pd.read_csv('../../MNIST/sign_mnist_train.csv')
-    testing_data = pd.read_csv('../../MNIST/sign_mnist_test.csv')
+    training_dir = '../../MNIST/train'
+    testing_dir = '../../MNIST/test'
     
-    def __init__(self):
-        self.x_train = self.data_resizing(np.array([np.reshape(i, (NUMBER_OF_PIXELS, NUMBER_OF_PIXELS)) for i in self.training_data.iloc[:, 1:].values])) 
-        self.y_train = self.data_labeling(self.training_data.iloc[:, 0])
-        self.x_test = self.data_resizing(np.array([np.reshape(i, (NUMBER_OF_PIXELS, NUMBER_OF_PIXELS)) for i in self.testing_data.iloc[:, 1:].values])) 
-        self.y_test = self.data_labeling(self.testing_data.iloc[:, 0])
-        
+    def __init__(self):       
         if  os.path.isfile('../saved_model/saved_model.pb'):
             print('Loading model')     
             self.model = load_model('../saved_model')
@@ -38,21 +34,8 @@ class NeuralNetwork():
             self.make_model()
             self.model.save('../saved_model') 
 
-    def data_labeling(self, y):
-        for i in range(0, len(y)):
-            if(y[i] >= 9):
-                y[i]-=1
-        label_binrizer = LabelBinarizer()
-        labels = label_binrizer.fit_transform(y)
- 
-        return labels
-
-    def data_resizing(self, x):
-        x = x / 255.0
-        x = x.reshape(x.shape[0], NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1)
-        return x
-
     def make_model(self):
+
         callbacks = myCallback()   
         self.model = Sequential([
             Conv2D(64, kernel_size=(3,3), activation='relu', input_shape=(NUMBER_OF_PIXELS, NUMBER_OF_PIXELS, 1)),
@@ -66,7 +49,35 @@ class NeuralNetwork():
         ])  
 
         self.model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-        self.model.fit(self.x_train, self.y_train,  epochs=10, callbacks=[callbacks])  
+        # self.model.fit(self.x_train, self.y_train,  epochs=10, callbacks=[callbacks])  
+        self.fit_model()
+
+    def fit_model(self):
+        train_datagen = ImageDataGenerator(
+            rescale=1./255,
+            rotation_range=30,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
+            shear_range=0.2,
+            zoom_range=0.2,
+            fill_mode='nearest'
+        )
+        train_generator = train_datagen.flow_from_directory(
+            self.training_dir,
+            batch_size=10,
+            class_mode='categorical',
+            target_size=(NUMBER_OF_PIXELS, NUMBER_OF_PIXELS),
+            color_mode = 'grayscale'
+        )     
+        validation_datagen  = ImageDataGenerator( rescale = 1.0/255. )
+        validation_generator = validation_datagen.flow_from_directory(
+            self.training_dir,
+            batch_size=10,
+            class_mode  = 'categorical',
+            target_size = (NUMBER_OF_PIXELS, NUMBER_OF_PIXELS),
+            color_mode = 'grayscale'
+        )
+        self.model.fit(train_generator,epochs=10,verbose=1,validation_data=validation_generator)
   
     def predict_pic(self, image):
         accuracy = self.model.predict(image).reshape(NUMBER_OF_LETTERS)
@@ -77,8 +88,6 @@ class NeuralNetwork():
         return 'I couldnt recognize ', 0        
 
 
-
-# nn = NeuralNetwork()
 # pred = nn.model.predict(nn.x_test).reshape(NUMBER_OF_LETTERS).round().astype(int)
 # new = []
 # for i in range(0, len(pred)):
