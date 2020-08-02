@@ -43,8 +43,8 @@ class NeuralNetwork():
             Conv2D(64, kernel_size=(3,3), activation='relu'),
             MaxPooling2D(pool_size=(2, 2)),
             Flatten(),
+            Dropout(0.4),
             Dense(128, activation = 'relu'),
-            Dropout(0.2),
             Dense(NUMBER_OF_LETTERS, activation='softmax')
         ])  
 
@@ -77,7 +77,7 @@ class NeuralNetwork():
             target_size = (NUMBER_OF_PIXELS, NUMBER_OF_PIXELS),
             color_mode = 'grayscale'
         )
-        self.model.fit(train_generator,epochs=10,verbose=1,validation_data=validation_generator)
+        self.history = self.model.fit(train_generator,epochs=60,verbose=1,validation_data=validation_generator)
   
     def predict_pic(self, image):
         accuracy = self.model.predict(image).reshape(NUMBER_OF_LETTERS)
@@ -87,11 +87,16 @@ class NeuralNetwork():
                 return DICTIONARY[i], accuracy[i]
         return 'I couldnt recognize ', 0        
 
+def plot_graphs(history, string):
+    plt.plot(history.history[string])
+    plt.plot(history.history['val_'+string])
+    plt.xlabel("Epochs")
+    plt.ylabel(string)
+    plt.legend([string, 'val_'+string])
+    plt.show()
 
-# pred = nn.model.predict(nn.x_test).reshape(NUMBER_OF_LETTERS).round().astype(int)
-# new = []
-# for i in range(0, len(pred)):
-#     if pred[i] == 1:
-#         new.append(i)
-# print(new)        
-# accuracy_score(nn.y_test, pred)
+
+history = NeuralNetwork().history
+plot_graphs(history, 'accuracy')
+plot_graphs(history, 'loss')
+
