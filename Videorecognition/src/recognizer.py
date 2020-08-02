@@ -96,7 +96,4 @@ def plot_graphs(history, string):
     plt.show()
 
 
-history = NeuralNetwork().history
-plot_graphs(history, 'accuracy')
-plot_graphs(history, 'loss')
 
